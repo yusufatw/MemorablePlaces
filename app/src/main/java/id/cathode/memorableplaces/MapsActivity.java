@@ -3,6 +3,7 @@ package id.cathode.memorableplaces;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
@@ -27,6 +28,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -56,7 +58,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (title != "Your Location"){
             mMap.addMarker(new MarkerOptions().position(userLocation).title(title));
         }
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 10));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15));
     }
 
     @Override
@@ -173,6 +175,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         MainActivity.locations.add(latLng);
 
         MainActivity.arrayAdapter.notifyDataSetChanged();
+
+        SharedPreferences sharedPreferences = this.getSharedPreferences("id.cathode.memorableplaces", Context.MODE_PRIVATE);
+
+        try {
+            ArrayList<String> latitudes = new ArrayList<>();
+            ArrayList<String> longitudes = new ArrayList<>();
+            for (LatLng coordinates : MainActivity.locations){
+                latitudes.add(Double.toString(coordinates.latitude));
+                longitudes.add(Double.toString(coordinates.longitude));
+            }
+            sharedPreferences.edit().putString("places", ObjectSerializer.serialize(MainActivity.places)).apply();
+            sharedPreferences.edit().putString("latitudes", ObjectSerializer.serialize(latitudes)).apply();
+            sharedPreferences.edit().putString("longitudes", ObjectSerializer.serialize(longitudes)).apply();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         Toast.makeText(getApplicationContext(), "Location Saved", Toast.LENGTH_SHORT).show();
     }
